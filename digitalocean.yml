@@ -1,0 +1,41 @@
+---
+- hosts: digitalocean
+
+  vars:
+    do_token: DIGITAL_OCEAN_API_TOKEN
+    do_image: 'ubuntu-14-04-x64'
+    do_name: 'droplet-one'
+    do_size: '512mb'
+    do_region: 'fra1'
+
+  tasks:
+
+  - name: ensure ssh key exists
+    user: >
+      name={{ ansible_user_id }}
+      generate_ssh_key=yes
+      ssh_key_file=.ssh/id_rsa
+
+  - name: ensure key exists at DigitalOcean
+    digital_ocean: >
+      state=present
+      command=ssh
+      name=my_ssh_key
+      ssh_pub_key={{ lookup('file', '~/.ssh/id_rsa.pub') }}
+      api_token={{ do_token }}
+    register: my_ssh_key
+
+  - name: ensure droplet one exists
+    digital_ocean: >
+      state=present
+      command=droplet
+      name={{ do_name }}
+      unique_name=yes
+      size_id={{ do_size }}
+      region_id={{ do_region }}
+      image_id={{ do_image }}
+      ssh_key_ids={{ my_ssh_key.ssh_key.id }}
+      api_token={{ do_token }}
+    register: do_result
+
+  - debug: msg="IP is {{ do_result.droplet.ip_address }}"
