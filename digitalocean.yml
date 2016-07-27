@@ -2,7 +2,7 @@
 - hosts: digitalocean
 
   vars:
-    do_token: DIGITAL_OCEAN_API_TOKEN
+    do_token: "{{ lookup('file', '~/.ssh/digital_ocean_token') }}"
     do_image: 'ubuntu-14-04-x64'
     do_name: 'droplet-one'
     do_size: '512mb'
